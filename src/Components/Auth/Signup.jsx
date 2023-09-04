@@ -40,6 +40,7 @@ console.log('hi');
     <div className="container">
       <div className="form-container">
         <h2>Sign Up</h2>
+        {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
           <input
             type="text" // Change type to "text" for the "Username" input

@@ -29,7 +29,7 @@ const ChatBody = () => {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
-  }, [dispatch]);
+  }, [dispatch, navigate, user]);
 
   return (
     <>

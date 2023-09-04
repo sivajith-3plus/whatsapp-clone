@@ -1,11 +1,20 @@
 import React, { useEffect } from "react";
 import "./UserDetails.css";
+import options from "./userAboutOptions";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-const UserDetails = ({ chatMate,setIsVisible,isVisible }) => {
+const UserDetails = ({ chatMate, setIsVisible, isVisible }) => {
+  const user = useSelector((state) => state.user.data.user);
+const navigate = useNavigate()
 
-  useEffect(()=>{
-    setIsVisible(true)
-  },[setIsVisible])
+  function handleEdit(){
+    navigate('/editUser')
+  }
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, [setIsVisible]);
   function handleClose() {
     setIsVisible(false);
   }
@@ -25,11 +34,27 @@ const UserDetails = ({ chatMate,setIsVisible,isVisible }) => {
           <img src={chatMate.profilePic} alt="" />
         </div>
         <h3>{chatMate.userName}</h3>
-        <h4>{chatMate.phoneNumber}</h4>
+        <h4>
+          {chatMate.phoneNumber}{chatMate._id === user._id &&  <i className="fas fa-pencil-alt" onClick={handleEdit}></i>}
+        </h4>
       </div>
       <div className="user__about">
         <h5>About</h5>
         <h4>{chatMate.about}</h4>
+      </div>
+      <div className="user__options">
+        {options.map((option, index) => (
+          <div className="user__option__type" key={index}>
+            <div className="user__option__type__title">
+              <i className={option.icon}></i>
+              <div>
+                <h4>{option.title}</h4>
+                {option.subtitle && <p>{option.subtitle}</p>}
+              </div>
+            </div>
+            {option.chevron && <i className="fas fa-chevron-right"></i>}
+          </div>
+        ))}
       </div>
     </div>
   );

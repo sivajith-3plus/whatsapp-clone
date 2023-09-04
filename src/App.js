@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import Login from "./Components/Auth/Login";
 import SignUp from "./Components/Auth/Signup";
 import axios from "axios";
+import EditUser from "./Components/EditUser/EditUser";
 
 // axios settings
 axios.defaults.baseURL = 'http://localhost:5000';
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/" element={<ChatBody />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/editUser" element={<EditUser />} />
       </Routes>
     </div>
   );
