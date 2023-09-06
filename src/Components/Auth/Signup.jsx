@@ -1,39 +1,35 @@
-import React, { useState } from 'react';
-import './LoginSignUpPage.css';
-import { useNavigate } from 'react-router-dom';
-import Axios from 'axios'; // Import Axios for making API requests
+import React, { useState } from "react";
+import "./LoginSignUpPage.css";
+import { useNavigate } from "react-router-dom";
+import Axios from "axios";
+import api from "../../Api";
 
 const SignUp = () => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [profilePic, setprofilePic] = useState('');
-  const [about, setAbout] = useState('');
-  const [userName, setUsername] = useState('');
-  const [error, setError] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [profilePic, setprofilePic] = useState("");
+  const [about, setAbout] = useState("");
+  const [userName, setUsername] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-console.log('hi');
     try {
-      const response = await Axios.post('/auth/signup', {
-        credentials: {
-          phoneNumber,
-          password,
-          profilePic,
-          about,
-          userName,
-        },
-      });
-
+      const response = await api().signup(
+        phoneNumber,
+        password,
+        profilePic,
+        about,
+        userName
+      );
       const newUser = response.data.newUser;
 
-      console.log('newUser',newUser);
-      navigate('/login');
+      console.log("newUser", newUser);
+      navigate("/login");
     } catch (err) {
-      // Handle sign-up error
-      setError('Failed to sign up. Please try again.');
+      setError("Failed to sign up. Please try again.");
     }
   };
   return (
@@ -74,7 +70,9 @@ console.log('hi');
           />
           <button type="submit">Sign Up</button>
         </form>
-        <p className='toggle-link' onClick={()=>navigate('/login')}>Already have an account? Log In</p>
+        <p className="toggle-link" onClick={() => navigate("/login")}>
+          Already have an account? Log In
+        </p>
       </div>
     </div>
   );

@@ -65,3 +65,15 @@
   ;
   width: 90%;
 }
+
+
+.seen-indicator{
+  color: blue;
+}
+
+.blocked{
+  width: 100%;
+  text-align: center;
+  color: red;
+  font-size: medium;
+}

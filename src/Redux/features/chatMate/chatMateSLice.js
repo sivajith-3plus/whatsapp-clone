@@ -1,20 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    data:{ }
-}
+  data: {},
+};
 
 export const chatMateSlice = createSlice({
-    name:'chatMate',
-    initialState,
-    reducers:{
-        setChatMate:(state,action)=>{
-            state.data = action.payload
-            
-        }
-    }
-})
+  name: "chatMate",
+  initialState,
+  reducers: {
+    setChatMate: (state, action) => {
+      state.data = action.payload;
+    },
+    addChatMateBlocker: (state, action) => {
+      state.data.blockedUsers.push(action.payload);
+    },
+  },
+});
 
-export const {setChatMate} = chatMateSlice.actions
+export const { setChatMate, addChatMateBlocker } = chatMateSlice.actions;
 
-export default chatMateSlice.reducer
+export default chatMateSlice.reducer;

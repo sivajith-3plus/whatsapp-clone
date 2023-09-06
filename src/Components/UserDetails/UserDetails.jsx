@@ -20,7 +20,7 @@ const navigate = useNavigate()
   }
 
   if (!isVisible) {
-    return null; // Return nothing if component is not visible
+    return null; 
   }
 
   return (
@@ -31,7 +31,7 @@ const navigate = useNavigate()
       </div>
       <div className="user__profile__details">
         <div className="user__profile__image">
-          <img src={chatMate.profilePic} alt="" />
+          <img src={chatMate.profilePic  || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'} alt="" />
         </div>
         <h3>{chatMate.userName}</h3>
         <h4>

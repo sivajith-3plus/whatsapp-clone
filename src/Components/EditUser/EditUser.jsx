@@ -3,19 +3,20 @@ import { useSelector, useDispatch } from "react-redux";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {  updateUser } from "../../Redux/features/user/userSlice";
+import api from "../../Api";
 
 const EditUser = () => {
   const user = useSelector((state) => state.user.data.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [updatedUser, setUpdatedUser] = useState(user); // Create a separate state for the updated user
+  const [updatedUser, setUpdatedUser] = useState(user); 
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await Axios.put("/users/updateUserData", { updatedUser });
+      const response = api().updateUser(updatedUser)
 
       dispatch(updateUser(updatedUser));
 

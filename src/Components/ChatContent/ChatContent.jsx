@@ -10,14 +10,33 @@ import {
   updateIsSeen,
 } from "../../Redux/features/messages/messagesSlice";
 import socket from "../../socket";
+import { addChatMateBlocker } from "../../Redux/features/chatMate/chatMateSLice";
+import MessageInfo from "../MessageInfo/MessageInfo";
 
 const ChatContent = () => {
   const [isVisible, setIsVisible] = useState(false);
   const chatMate = useSelector((state) => state.chatMate.data);
   const user = useSelector((state) => state.user.data.user);
   const messages = useSelector((state) => state.messages.data);
+  const [isBlocked, setIsblocked] = useState(false);
+  const [isMessageDetails, setIsMessageDetails] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState("");
+
   const dispatch = useDispatch();
   const chatContainerRef = useRef(null);
+
+  useEffect(() => {
+    console.log("hii", chatMate);
+    if (chatMate.blockedUsers.includes(user._id)) {
+      setIsblocked(true);
+    } else {
+      setIsblocked(false);
+    }
+  }, [chatMate]);
+
+  
+
+  console.log(messages);
 
   useEffect(() => {
     const handleReceiveMessage = (data) => {
@@ -28,9 +47,29 @@ const ChatContent = () => {
     };
 
     socket.on("receive_message", handleReceiveMessage);
+    socket.on("unblocked", ({ blockedId, blockerId }) => {
+      console.log("unblocked");
+      if (chatMate._id === blockerId && user._id == blockedId) {
+        setIsblocked(false);
+        chatMate.blockedUsers.filter((val) => val !== blockedId);
+      }
+    });
+
+    socket.on("blocked", ({ blockedId, blockerId }) => {
+      if (chatMate._id === blockerId && user._id == blockedId) {
+        setIsblocked(true);
+        dispatch(addChatMateBlocker(user._id));
+      }
+    });
+
+    socket.on('chat deleted',()=>{
+      console.log('chat deleted');
+      dispatch(setMessages([]))
+    })
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("unblocked");
     };
   }, [chatMate._id, dispatch, messages]);
 
@@ -40,11 +79,11 @@ const ChatContent = () => {
     setInputMessage(e.target.value);
   };
 
-  socket.emit("onChat", () => {
-  });
+  socket.emit("onChat", () => {});
 
   // Function to mark a message as seen
   const markMessageAsSeen = async (messageId) => {
+    console.log('message id',messages);
     try {
       dispatch(updateIsSeen({ userId: user._id, chatMateId: chatMate._id }));
       console.log("called");
@@ -55,6 +94,9 @@ const ChatContent = () => {
   };
 
   const handleSend = () => {
+    if (isBlocked && inputMessage == null) {
+      return 0;
+    }
     socket.emit("send_message", {
       content: inputMessage,
       senderId: user._id,
@@ -77,7 +119,6 @@ const ChatContent = () => {
     // socket.on("msgSeen", () => {
     //   dispatch(updateIsSeen({ userId: user._id, chatMateId: chatMate._id }));
     // });
-
     // return () => {
     //   // Clean up the socket event listener
     //   socket.off("msgSeen");
@@ -90,8 +131,6 @@ const ChatContent = () => {
         chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
-
-  
 
   useEffect(() => {
     console.log("socket triggeres");
@@ -111,13 +150,15 @@ const ChatContent = () => {
     <>
       <div className="chat__content__main">
         <div
-          onClick={() => setIsVisible(!isVisible)}
+          // onClick={() => setIsVisible(!isVisible)}
           style={{ cursor: "pointer" }}
         >
           <ChatNav
             isContent={true}
             name={chatMate ? chatMate.userName : ""}
             profilePic={chatMate ? chatMate.profilePic : ""}
+            setIsVisible={setIsVisible}
+            isVisible={isVisible}
           />
         </div>
         <div className="chat__text__area" ref={chatContainerRef}>
@@ -133,30 +174,48 @@ const ChatContent = () => {
               .map((message) => {
                 const chatTextClass =
                   message.senderId === user._id ? "right" : "left";
-                // Mark the message as seen when it is displayed
 
-                  if (message.senderId === user._id && !message.isSeen) {
-                    markMessageAsSeen(message._id);
-                  }
+                if (message.senderId === user._id && !message.isSeen) {
+                  markMessageAsSeen(message);
+                }
 
                 return (
                   <div
                     className={`chat__text ${chatTextClass}`}
                     key={message._id}
                   >
-                    <p>{message.content}</p>
-                    {message.isDelivered && !message.isSeen && (
-                      <span className="delivery-indicator">Delivered</span>
+                    <i
+                      className="fas fa-info-circle"
+                      onClick={() => {
+                        setIsMessageDetails(!isMessageDetails);
+                        setSelectedMessageId(message._id);
+                      }}
+                    ></i>
+
+                    {selectedMessageId === message._id ? (
+                      <MessageInfo
+                        setIsMessageDetails={setIsMessageDetails}
+                        setSelectedMessageId={setSelectedMessageId}
+                        message={message}
+                      />
+                    ) : (
+                      <>
+                        <p>{message.content}</p>
+                        {message.isDelivered && !message.isSeen && (
+                          <span className="delivery-indicator">✓✓</span>
+                        )}
+                        {message.isSeen===true && message.senderId === user._id && (
+                          <span className="seen-indicator">✓✓</span>
+                        )}
+                        <span className="timestamp">
+                          {formatTimestamp(message.createdAt)}
+                        </span>
+                      </>
                     )}
-                    {message.isSeen && message.senderId === user._id && (
-                      <span className="seen-indicator">Seen</span>
-                    )}
-                    <span className="timestamp">
-                      {formatTimestamp(message.createdAt)}
-                    </span>
                   </div>
                 );
               })}
+            {isBlocked && <div className="blocked">the user blocked you</div>}
           </div>
         </div>
         <div className="chat__input">
@@ -167,6 +226,7 @@ const ChatContent = () => {
               type="text"
               onChange={handleInput}
               value={inputMessage}
+              disabled={isBlocked}
               onKeyPress={(e) => {
                 if (e.key === "Enter") {
                   handleSend();

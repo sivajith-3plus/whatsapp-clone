@@ -3,12 +3,12 @@ import "./LoginSignUpPage.css";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../Redux/features/user/userSlice";
-import Axios from "axios"; // Import Axios for making API requests
+import api from "../../Api";
 
 const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // State to handle errors
+  const [error, setError] = useState(""); 
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -17,25 +17,21 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      // Make a POST request to your login API with user credentials
-      const response = await Axios.post("/auth/signin", {
-        credentials: {
-          phoneNumber,
-          password,
-        },
-      });
+      let response;
+      try {
+        response = await api().signin(phoneNumber,password)
+      } catch (err) {
+        console.log("Unable to fetch the user phone Number and password.");
+      }
 
-      // Assuming the response contains user data
       const userData = response.data;
 
-      // Dispatch the user data to the Redux store
       dispatch(setUser(userData));
 
-      // Navigate to the home page or the desired route after successful login
       navigate("/");
     } catch (err) {
       // Handle login error
-      setError("Invalid phone number or password"); // Set an error message
+      setError("Invalid phone number or password");
     }
   };
 
